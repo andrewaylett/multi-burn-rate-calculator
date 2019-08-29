@@ -7,6 +7,48 @@ function detectionTime(errorThreshold, time, errorRate) {
     return -1;
 }
 
+function exhaustionTime(errorRate, errorBudget, sloWindow) {
+    const exhaustion = (sloWindow * 24 * 60) / (errorRate / errorBudget);
+    if (exhaustion > (sloWindow * 24 * 60)) {
+        return -1;
+    }
+    return exhaustion;
+}
+
+function formatDuration(value) {
+    const rawMinutes = value;
+    const seconds = Math.floor(rawMinutes * 60) % 60;
+    const roundMinutes = Math.floor(rawMinutes);
+    const minutes = roundMinutes % 60;
+    const roundHours = Math.floor(roundMinutes / 60);
+    const hours = roundHours % 24;
+    const days = Math.floor(roundHours / 24);
+    return `${days}d ${hours}h ${minutes}m ${seconds}s`;
+}
+
+function calculateTimings(errorThresholds, errorRate, errorBudget, sloWindow) {
+    const detectionTime1h = detectionTime(errorThresholds['1h'], (60 * 1), errorRate);
+    const detectionTime6h = detectionTime(errorThresholds['6h'], (60 * 6), errorRate);
+    const detectionTime3d = detectionTime(errorThresholds['3d'], (60 * 24 * 3), errorRate);
+
+    let detectionPage = -1;
+    if (detectionTime1h < detectionTime6h && detectionTime1h > -1) {
+        detectionPage = detectionTime1h;
+    } else if (detectionTime6h > -1) {
+        detectionPage = detectionTime6h;
+    }
+
+    let detectionTicket = -1;
+
+    if (detectionPage === -1) {
+        if (detectionTime3d > -1) {
+            detectionTicket = detectionTime3d;
+        }
+    }
+    const exhausted = exhaustionTime(errorRate, errorBudget, sloWindow);
+    return {detectionPage, detectionTicket, exhausted};
+}
+
 class MultipleBurnRateCalculator {
     constructor() {
         this.form = document.getElementsByTagName('form')[0];
@@ -37,40 +79,31 @@ class MultipleBurnRateCalculator {
             this.form.querySelector(`#budget_consumption_${humanTime}`).textContent = budgetConsumption;
         }
 
-        this.drawDetectionTime(errorThresholds);
+        this.drawDetectionTime(errorThresholds, errorBudget, sloWindow);
     }
 
-    drawDetectionTime(errorThresholds) {
-        console.info(errorThresholds);
+    drawDetectionTime(errorThresholds, errorBudget, sloWindow) {
+        console.info(errorThresholds, errorBudget);
 
         const startLog = 0.995;
         const pagePoints = [];
         const ticketPoints = [];
+        const exhaustionPoints = [];
 
         for (let i = 0; i<1100; i++) {
             const errorRate = Math.pow(startLog, i * 2);
 
-            const detectionTime1h = detectionTime(errorThresholds['1h'], (60 * 1), errorRate);
-            const detectionTime6h = detectionTime(errorThresholds['6h'], (60 * 6), errorRate);
-            const detectionTime3d = detectionTime(errorThresholds['3d'], (60 * 24 * 3),errorRate);
+            let {
+                detectionPage,
+                detectionTicket,
+                exhausted
+            } = calculateTimings(errorThresholds, errorRate, errorBudget, sloWindow);
 
-            let detectionPage = -1;
-            if (detectionTime1h < detectionTime6h && detectionTime1h > -1) {
-                detectionPage = detectionTime1h;
-            } else if (detectionTime6h > -1) {
-                detectionPage = detectionTime6h;
-            }
+            ticketPoints.push([errorRate, detectionTicket]);
 
             pagePoints.push([errorRate, detectionPage]);
 
-            let detectionTicket = -1;
-            if (detectionPage === -1) {
-                if (detectionTime3d > -1) {
-                    detectionTicket = detectionTime3d;
-                }
-            }
-
-            ticketPoints.push([errorRate, detectionTicket]);
+            exhaustionPoints.push([errorRate, exhausted])
         }
         Highcharts.chart('detection_time', {
             title: {
@@ -84,15 +117,21 @@ class MultipleBurnRateCalculator {
                 },
                 labels:{
                     formatter: (event) => {
-                        return Highcharts.dateFormat("%H:%M:%S", new Date(event.value*60*1000));
+                        return formatDuration(event.value);
                     }
                 }
             },
 
             tooltip: {
                 pointFormatter: function(event)  {
-                    const detectionTime = Highcharts.dateFormat("%H:%M:%S", new Date(this.y*60*1000));
-                    return `Detection time: ${detectionTime}<br />Error rate: ${this.x * 100}%` ;
+                    const {
+                        detectionPage,
+                        detectionTicket,
+                        exhausted
+                    } = calculateTimings(errorThresholds, this.x, errorBudget, sloWindow);
+                    const detectionTime = formatDuration(Math.max(detectionPage, detectionTicket));
+                    const exhaustedTime = formatDuration(exhausted);
+                    return `Error rate: ${this.x * 100}%<br/>Detected: ${detectionTime}<br />Exhausted: ${exhaustedTime}` ;
                 },
             },
             xAxis: {
@@ -128,6 +167,9 @@ class MultipleBurnRateCalculator {
             }, {
                 name: 'Page',
                 data: pagePoints,
+            }, {
+                name: 'Exhaustion',
+                data: exhaustionPoints,
             }],
         });
     }
