@@ -76,7 +76,7 @@ class MultipleBurnRateCalculator {
 
             const budgetConsumption = (burnRate * time) / (sloWindow * 24);
             errorThresholds[humanTime] = burnRate * errorBudget;
-            this.form.querySelector(`#budget_consumption_${humanTime}`).textContent = budgetConsumption;
+            this.form.querySelector(`#budget_consumption_${humanTime}`).textContent = `${(budgetConsumption*100).toPrecision(3)}%`;
         }
 
         this.drawDetectionTime(errorThresholds, errorBudget, sloWindow);
@@ -129,9 +129,11 @@ class MultipleBurnRateCalculator {
                         detectionTicket,
                         exhausted
                     } = calculateTimings(errorThresholds, this.x, errorBudget, sloWindow);
-                    const detectionTime = formatDuration(Math.max(detectionPage, detectionTicket));
+                    let detection = Math.max(detectionPage, detectionTicket);
+                    const detectionTime = formatDuration(detection);
                     const exhaustedTime = formatDuration(exhausted);
-                    return `Error rate: ${this.x * 100}%<br/>Detected: ${detectionTime}<br />Exhausted: ${exhaustedTime}` ;
+                    const responseTime = formatDuration(exhausted - detection)
+                    return `Error rate: ${(this.x * 100).toPrecision(4)}%<br/>Detected: ${detectionTime}<br />Exhausted: ${exhaustedTime}<br />Response Time: ${responseTime}` ;
                 },
             },
             xAxis: {
