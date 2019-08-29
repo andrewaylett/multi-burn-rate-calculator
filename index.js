@@ -11,19 +11,19 @@ class MultipleBurnRateCalculator {
     constructor() {
         this.form = document.getElementsByTagName('form')[0];
 
-        this.form.addEventListener('input', this.recalculateBurnRates.bind(this));
+        this.form.addEventListener('input', this.recalculateBudgetConsumption.bind(this));
 
-        this.recalculateBurnRates();
+        this.recalculateBudgetConsumption();
     }
 
-    recalculateBurnRates() {
+    recalculateBudgetConsumption() {
         const slo = parseFloat(this.form.querySelector('#slo').value);
         const sloWindow = parseFloat(this.form.querySelector('#slo_window').value);
         const errorBudget = 1 - (slo/100);
         const errorThresholds = {};
 
-        for (const humanTime of ['1h', '6h', '1d', '3d']) {
-            const budgetConsuption = parseFloat(this.form.querySelector(`#budget_consumption_${humanTime}`).value);
+        for (const humanTime of ['1h', '6h', '3d']) {
+            const burnRate = parseFloat(this.form.querySelector(`#burn_rate_${humanTime}`).value);
 
             let [time, kind] = humanTime.split('');
             time = parseInt(time);
@@ -32,9 +32,9 @@ class MultipleBurnRateCalculator {
                 time = time * 24;
             }
 
-            const burnRate = (sloWindow * 24) * budgetConsuption / time / 100;
+            const budgetConsumption = (burnRate * time) / (sloWindow * 24);
             errorThresholds[humanTime] = burnRate * errorBudget;
-            this.form.querySelector(`#burn_rate_${humanTime}`).textContent = burnRate;
+            this.form.querySelector(`#budget_consumption_${humanTime}`).textContent = budgetConsumption;
         }
 
         this.drawDetectionTime(errorThresholds);
@@ -47,12 +47,11 @@ class MultipleBurnRateCalculator {
         const pagePoints = [];
         const ticketPoints = [];
 
-        for (let i = 0; i<1000; i++) {
+        for (let i = 0; i<1100; i++) {
             const errorRate = Math.pow(startLog, i * 2);
 
             const detectionTime1h = detectionTime(errorThresholds['1h'], (60 * 1), errorRate);
             const detectionTime6h = detectionTime(errorThresholds['6h'], (60 * 6), errorRate);
-            const detectionTime1d = detectionTime(errorThresholds['1d'], (60 * 24), errorRate);
             const detectionTime3d = detectionTime(errorThresholds['3d'], (60 * 24 * 3),errorRate);
 
             let detectionPage = -1;
@@ -66,9 +65,7 @@ class MultipleBurnRateCalculator {
 
             let detectionTicket = -1;
             if (detectionPage === -1) {
-                if (detectionTime1d < detectionTime3d && detectionTime1d > -1) {
-                    detectionTicket = detectionTime1d;
-                } else if (detectionTime3d > -1) {
+                if (detectionTime3d > -1) {
                     detectionTicket = detectionTime3d;
                 }
             }

@@ -13,7 +13,7 @@
   <body>
     <nav class="light-blue lighten-1" role="navigation">
       <div class="nav-wrapper container"><a id="logo-container" href="/" class="brand-logo">Multiple Burn Rate Calculator</a>
-        <a href="https://github.com/wpjunior/multi-burn-rate-calculator" class="right">Source code</a>
+        <a href="https://github.com/andrewaylett/multi-burn-rate-calculator" class="right">Source code</a>
       </div>
     </nav>
 
@@ -38,8 +38,8 @@
               <thead>
                 <tr>
                   <th>Time</th>
-                  <th>Budget consumption (%)</th>
-                  <th>Burn rate</th>
+                  <th>Burn Rate</th>
+                  <th>Budget Consumption</th>
                 </tr>
               </thead>
               <tbody>
@@ -48,10 +48,10 @@
                     1h
                   </td>
                   <td>
-                    <input id="budget_consumption_1h" type="number" step="any" value="2" />
+                    <input id="burn_rate_1h" type="number" step="any" value="2" />
                   </td>
                   <td>
-                    <label id="burn_rate_1h"></label>
+                    <label id="budget_consumption_1h"></label>
                   </td>
                 </tr>
                 <tr>
@@ -59,21 +59,10 @@
                     6h
                   </td>
                   <td>
-                    <input id="budget_consumption_6h" type="number" step="any" value="5" />
+                    <input id="burn_rate_6h" type="number" step="any" value="5" />
                   </td>
                   <td>
-                    <label id="burn_rate_6h"></label>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    1d
-                  </td>
-                  <td>
-                    <input id="budget_consumption_1d" type="number" step="any" value="10" />
-                  </td>
-                  <td>
-                    <label id="burn_rate_1d"></label>
+                    <label id="budget_consumption_6h"></label>
                   </td>
                 </tr>
                 <tr>
@@ -81,10 +70,10 @@
                     3d
                   </td>
                   <td>
-                    <input id="budget_consumption_3d" type="number" step="any" value="10" />
+                    <input id="burn_rate_3d" type="number" step="any" value="10" />
                   </td>
                   <td>
-                    <label id="burn_rate_3d"></label>
+                    <label id="budget_consumption_3d"></label>
                   </td>
                 </tr>
               </tbody>
