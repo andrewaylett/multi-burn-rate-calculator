@@ -93,18 +93,23 @@ class MultipleBurnRateCalculator {
         for (let i = 0; i<1100; i++) {
             const errorRate = Math.pow(startLog, i * 2);
 
+            if (errorRate < errorBudget) {
+                break;
+            }
+
             let {
                 detectionPage,
                 detectionTicket,
                 exhausted
             } = calculateTimings(errorThresholds, errorRate, errorBudget, sloWindow);
 
-            ticketPoints.push([errorRate, detectionTicket]);
+            ticketPoints.unshift([errorRate, detectionTicket]);
 
-            pagePoints.push([errorRate, detectionPage]);
+            pagePoints.unshift([errorRate, detectionPage]);
 
-            exhaustionPoints.push([errorRate, exhausted])
+            exhaustionPoints.unshift([errorRate, exhausted])
         }
+
         Highcharts.chart('detection_time', {
             title: {
                 text: '',
