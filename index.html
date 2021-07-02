@@ -38,6 +38,7 @@
               <thead>
                 <tr>
                   <th>Time</th>
+                  <th/>
                   <th>Burn Rate</th>
                   <th>Budget Consumption</th>
                 </tr>
@@ -45,35 +46,38 @@
               <tbody>
                 <tr>
                   <td>
-                    1h
+                    <input id="burn_duration_1h" type="number" step="any" value="1" /></td>
+                  <td><label for="burn_duration_1h">hours checked for fast page</label>
                   </td>
                   <td>
                     <input id="burn_rate_1h" type="number" step="any" value="14.4" />
                   </td>
                   <td>
-                    <label id="budget_consumption_1h"></label>
+                    <label id="budget_consumption_1h" for="burn_rate_1h"></label>
                   </td>
                 </tr>
                 <tr>
                   <td>
-                    6h
+                    <input id="burn_duration_6h" type="number" step="any" value="6" /></td>
+                  <td><label for="burn_duration_6h">hours checked for slow page</label>
                   </td>
                   <td>
                     <input id="burn_rate_6h" type="number" step="any" value="6" />
                   </td>
                   <td>
-                    <label id="budget_consumption_6h"></label>
+                    <label id="budget_consumption_6h" for="burn_rate_6h"></label>
                   </td>
                 </tr>
                 <tr>
                   <td>
-                    3d
+                    <input id="burn_duration_3d" type="number" step="any" value="3" /></td>
+                  <td><label for="burn_duration_3d">days checked for ticket</label>
                   </td>
                   <td>
                     <input id="burn_rate_3d" type="number" step="any" value="1" />
                   </td>
                   <td>
-                    <label id="budget_consumption_3d"></label>
+                    <label id="budget_consumption_3d" for="burn_rate_3d"></label>
                   </td>
                 </tr>
               </tbody>
