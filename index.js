@@ -31,22 +31,22 @@ function calculateTimings(errorThresholds, errorRate, errorBudget, sloWindow) {
     const detectionTime6h = detectionTime(errorThresholds['6h'], (60 * 6), errorRate);
     const detectionTime3d = detectionTime(errorThresholds['3d'], (60 * 24 * 3), errorRate);
 
-    let detectionPage = -1;
-    if (detectionTime1h < detectionTime6h && detectionTime1h > -1) {
-        detectionPage = detectionTime1h;
-    } else if (detectionTime6h > -1) {
-        detectionPage = detectionTime6h;
+    let detectionPage1h = -1;
+    if (detectionTime1h > -1) {
+        detectionPage1h = detectionTime1h;
+    }
+    let detectionPage6h = -1;
+    if (detectionTime6h > -1) {
+        detectionPage6h = detectionTime6h;
     }
 
     let detectionTicket = -1;
 
-    if (detectionPage === -1) {
         if (detectionTime3d > -1) {
             detectionTicket = detectionTime3d;
         }
-    }
     const exhausted = exhaustionTime(errorRate, errorBudget, sloWindow);
-    return {detectionPage, detectionTicket, exhausted};
+    return {detectionPage1h, detectionPage6h, detectionTicket, exhausted};
 }
 
 class MultipleBurnRateCalculator {
@@ -86,7 +86,8 @@ class MultipleBurnRateCalculator {
         console.info(errorThresholds, errorBudget);
 
         const startLog = 0.995;
-        const pagePoints = [];
+        const page1hPoints = [];
+        const page6hPoints = [];
         const ticketPoints = [];
         const exhaustionPoints = [];
 
@@ -98,14 +99,16 @@ class MultipleBurnRateCalculator {
             }
 
             let {
-                detectionPage,
+                detectionPage1h,
+                detectionPage6h,
                 detectionTicket,
                 exhausted
             } = calculateTimings(errorThresholds, errorRate, errorBudget, sloWindow);
 
             ticketPoints.unshift([errorRate, detectionTicket]);
 
-            pagePoints.unshift([errorRate, detectionPage]);
+            page1hPoints.unshift([errorRate, detectionPage1h]);
+            page6hPoints.unshift([errorRate, detectionPage6h]);
 
             exhaustionPoints.unshift([errorRate, exhausted])
         }
@@ -130,11 +133,12 @@ class MultipleBurnRateCalculator {
             tooltip: {
                 pointFormatter: function(event)  {
                     const {
-                        detectionPage,
+                        detectionPage1h,
+                        detectionPage6h,
                         detectionTicket,
                         exhausted
                     } = calculateTimings(errorThresholds, this.x, errorBudget, sloWindow);
-                    let detection = Math.max(detectionPage, detectionTicket);
+                    let detection = Math.max(detectionPage1h, detectionPage6h, detectionTicket);
                     const detectionTime = formatDuration(detection);
                     const exhaustedTime = formatDuration(exhausted);
                     const responseTime = formatDuration(exhausted - detection)
@@ -172,8 +176,11 @@ class MultipleBurnRateCalculator {
                 name: 'Ticket',
                 data: ticketPoints,
             }, {
-                name: 'Page',
-                data: pagePoints,
+                name: 'Page 6h',
+                data: page6hPoints,
+            }, {
+                name: 'Page 1h',
+                data: page1hPoints,
             }, {
                 name: 'Exhaustion',
                 data: exhaustionPoints,
